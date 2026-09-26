@@ -1,0 +1,87 @@
+{
+  "name": "smarttv-installer",
+  "version": "1.0.0",
+  "description": "Universal desktop & CLI sideload installer for Samsung Tizen and LG webOS Smart TVs.",
+  "author": "Krishnakant Gangurde",
+  "license": "GPL-3.0-only",
+  "main": "src/main.js",
+  "bin": {
+    "smarttv-installer": "cli.js"
+  },
+  "scripts": {
+    "start": "electron .",
+    "cli": "node cli.js",
+    "test": "node --check src/main.js && node --check src/preload.js && node --check src/renderer/renderer.js && node --check cli.js",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never",
+    "dist:linux": "electron-builder --linux --publish never"
+  },
+  "dependencies": {
+    "@webos-tools/cli": "^3.2.4",
+    "@xmldom/xmldom": "^0.8.10",
+    "adbhost": "^0.0.2",
+    "http-proxy-agent": "^9.1.0",
+    "jszip": "^3.10.1",
+    "node-forge": "^1.3.1",
+    "tizen": "file:vendor/tizen.js"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "io.github.smarttvinstaller",
+    "productName": "SmartTV Sideload Installer",
+    "icon": "icon.png",
+    "asar": true,
+    "npmRebuild": false,
+    "directories": {
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "logo/**/*",
+      "build/icon.png",
+      "installer.config.json",
+      "package.json"
+    ],
+    "win": {
+      "icon": "icon.ico",
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "SmartTV-Installer-${version}-Windows.${ext}"
+    },
+    "mac": {
+      "icon": "icon.icns",
+      "target": [
+        {
+          "target": "dir"
+        }
+      ]
+    },
+    "linux": {
+      "icon": "icon.png",
+      "category": "Utility",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "appImage": {
+      "artifactName": "SmartTV-Installer-${version}-Linux.${ext}"
+    }
+  }
+}

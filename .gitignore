@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.home/
+.electron-gyp/
+.DS_Store
+*.log
+.smarttv-cache/
+.smarttv-samsung-certificates/
+.nuvio-cache/
+.nuvio-samsung-certificates/
