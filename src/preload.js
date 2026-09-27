@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld("installer", {
   onLog: (callback) => ipcRenderer.on("installer:log", (event, payload) => callback(payload)),
   copyText: (text) => ipcRenderer.invoke("installer:copyText", text),
   selectFile: () => ipcRenderer.invoke("installer:selectFile"),
-  inspectPackage: (packagePath) => ipcRenderer.invoke("installer:inspectPackage", packagePath)
+  inspectPackage: (packagePath) => ipcRenderer.invoke("installer:inspectPackage", packagePath),
+  clearSamsungCertificates: () => ipcRenderer.invoke("installer:clearSamsungCertificates")
 });

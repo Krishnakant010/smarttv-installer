@@ -310,12 +310,12 @@ function setupInstallerUI() {
   const samsungDevModeNote = `For Tizen devices, ensure Developer Mode is enabled on your TV. While enabling Developer Mode, enter this computer's IP address as the Host PC IP.${renderHostPcIpToggle()}`;
   
   if (isMulti) {
-    osNoticeText.innerHTML = `<strong>Universal Mode:</strong> Drag & drop any .wgt or .ipk package. The installer will automatically inspect the metadata and handle signing. ${samsungDevModeNote}`;
+    osNoticeText.innerHTML = `<strong>Universal Mode:</strong> Drag & drop any .wgt or .ipk package. The installer will automatically inspect the metadata and handle signing. ${samsungDevModeNote} ${renderCertificateResetButton()}`;
   } else if (isSamsung) {
     if (requiresSamsungSignIn) {
-      osNoticeText.innerHTML = `<strong>Note:</strong> ${samsungDevModeNote} A browser window will open automatically if a new developer certificate needs to be issued.`;
+      osNoticeText.innerHTML = `<strong>Note:</strong> ${samsungDevModeNote} A browser window will open automatically if a new developer certificate needs to be issued. ${renderCertificateResetButton()}`;
     } else {
-      osNoticeText.innerHTML = `<strong>Note:</strong> ${samsungDevModeNote}`;
+      osNoticeText.innerHTML = `<strong>Note:</strong> ${samsungDevModeNote} ${renderCertificateResetButton()}`;
     }
   } else {
     osNoticeText.innerHTML = "<strong>Note:</strong> For LG webOS, ensure the Developer Mode app is installed from the LG Content Store and Developer Mode is switched ON.";
@@ -330,6 +330,10 @@ function setupInstallerUI() {
   samsungCertOptions.classList.toggle('hidden', isSimple || !(isSamsung || isMulti));
 }
 
+function renderCertificateResetButton() {
+  return `<div class="cert-status-row" style="margin-top: 8px; font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between;"><span class="cert-status-label">Samsung Signing Identity: Saved</span><button type="button" class="btn-text-sm" id="btn-reset-samsung-cert" style="color: #ff8597; text-decoration: underline; cursor: pointer; background: none; border: none; font-size: 12px;">Clear / Re-login</button></div>`;
+}
+
 function renderHostPcIpToggle() {
   const visibleIp = localIps.length ? localIps.join(' or ') : 'Unable to detect';
   const hiddenIp = localIps.length ? '*****' : 'Unable to detect';
@@ -338,7 +342,16 @@ function renderHostPcIpToggle() {
   return `<span class="host-ip-card"><span class="host-ip-label">Host PC IP:</span><span class="host-ip-value"><code>${showHostPcIp ? visibleIp : hiddenIp}</code><button type="button" class="ip-eye-button" id="btn-host-ip-eye" aria-label="${showHostPcIp ? 'Hide' : 'Show'} computer IP" aria-pressed="${showHostPcIp}">${eyeIcon}</button></span></span>`;
 }
 
-osNotice?.addEventListener('click', (event) => {
+osNotice?.addEventListener('click', async (event) => {
+  if (event.target?.id === 'btn-reset-samsung-cert') {
+    const res = await window.installer?.clearSamsungCertificates?.();
+    if (res?.ok) {
+      appendLog("Cleared saved Samsung certificates for this machine. Next install will open the Samsung OAuth sign-in gate.", "info");
+    } else {
+      appendLog(`Failed to clear certificate: ${res?.error || "Unknown error"}`, "error");
+    }
+    return;
+  }
   if (event.target?.id !== 'btn-host-ip-eye') return;
   showHostPcIp = !showHostPcIp;
   setupInstallerUI();

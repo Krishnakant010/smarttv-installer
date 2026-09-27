@@ -1556,21 +1556,27 @@ async function getSamsungCertificateCandidates(event, transport, options = {}) {
   }
 
   const duid = await getSamsungDuid(event, transport);
-  if (migratedLegacySamsungCertificateCount > 0) {
-    emit(event, {
-      type: "info",
-      text: `Recovered ${migratedLegacySamsungCertificateCount} Samsung signing identity file${migratedLegacySamsungCertificateCount === 1 ? "" : "s"} from the previous Nuvio WebTV Installer data folder.`
-    });
-  }
-  const candidates = await readSamsungCertificateCandidates(duid, transport.target);
-  if (candidates.length > 0) {
-    emit(event, {
-      type: "info",
-      text: candidates.length === 1
-        ? "Using the Samsung certificate already saved for this TV DUID."
-        : `Found ${candidates.length} saved Samsung signing identities for this TV DUID; previous identities will be available for update recovery.`
-    });
-    return { duid, candidates };
+  const shouldForceNewCert = Boolean(options.forceNewCert || options.samsungCert?.forceNewCert);
+
+  if (!shouldForceNewCert) {
+    if (migratedLegacySamsungCertificateCount > 0) {
+      emit(event, {
+        type: "info",
+        text: `Recovered ${migratedLegacySamsungCertificateCount} Samsung signing identity file${migratedLegacySamsungCertificateCount === 1 ? "" : "s"} from the previous Nuvio WebTV Installer data folder.`
+      });
+    }
+    const candidates = await readSamsungCertificateCandidates(duid, transport.target);
+    if (candidates.length > 0) {
+      emit(event, {
+        type: "info",
+        text: candidates.length === 1
+          ? "Using the Samsung certificate already saved for this TV DUID."
+          : `Found ${candidates.length} saved Samsung signing identities for this TV DUID; previous identities will be available for update recovery.`
+      });
+      return { duid, candidates };
+    }
+  } else {
+    emit(event, { type: "info", text: "New Samsung developer certificate requested. Opening sign-in gate..." });
   }
 
   const existing = await readSamsungCertificateConfig(transport.target);
@@ -2333,6 +2339,16 @@ async function runSamsung(event, action, options) {
         throw directInstallError;
       }
       if (isSamsungCertificateRejection(directInstallError)) {
+        const fullErr = `${directInstallError.message || ""}\n${directInstallError.stdout || ""}\n${directInstallError.stderr || ""}`;
+        if (/author certificate not match/i.test(fullErr)) {
+          throw new Error(
+            `Update Rejected: "Author certificate not match".\n\n` +
+            `Why this happened: This app is already installed on your Samsung TV with a different author certificate. Samsung Tizen security requires all updates to match the original author certificate.\n\n` +
+            `HOW TO FIX:\n` +
+            `1. Delete the existing app from your Samsung TV (On your TV: Apps -> highlight app -> hold Enter on remote -> Delete, or click the Uninstall button here).\n` +
+            `2. Click Install again. A fresh install will be accepted with your new certificate!`
+          );
+        }
         throw new Error(
           `${directInstallError.message}\n\n` +
           `Tried ${preparedPackage.candidates.length} saved signing ${preparedPackage.candidates.length === 1 ? "identity" : "identities"} for this TV. ` +
@@ -2483,4 +2499,19 @@ ipcMain.handle("installer:deleteLgDevice", async (event, deviceName) => {
 ipcMain.handle("installer:copyText", async (_event, text) => {
   clipboard.writeText(String(text || ""));
   return true;
+});
+
+ipcMain.handle("installer:clearSamsungCertificates", async () => {
+  try {
+    const certDir = getSamsungCertificateDirectory();
+    if (fs.existsSync(certDir)) {
+      const files = await fsp.readdir(certDir);
+      for (const file of files) {
+        await fsp.unlink(path.join(certDir, file)).catch(() => {});
+      }
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
 });
