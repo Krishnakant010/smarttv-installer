@@ -53,7 +53,7 @@
 
 ### 1. Installation & Setup
 ```bash
-git clone https://github.com/krishnakantgangurde/smarttv-installer.git
+git clone https://github.com/Krishnakant010/smarttv-installer.git
 cd smarttv-installer
 npm install
 ```
@@ -108,4 +108,4 @@ See [CREDITS.md](CREDITS.md) for full details and licenses.
 - **[Reis Can (reisxd)](https://github.com/reisxd)**: Author of `tizen.js` and `TizenBrew`, providing pure Node.js Samsung Developer OAuth certificate generation and ADB sync sideload transport.
 - **[LG webOS OSE Team](https://www.webosose.org/)**: Maintainers of `@webos-tools/cli` and `ares-*` command-line tools.
 - **[iqui27](https://github.com/iqui27/nuvio-native-legacy)**: Creator of `nuvio-native-legacy`, the high-performance native C / SDL2 / WASM TV client.
-- **[Krishnakant Gangurde](https://github.com/krishnakantgangurde)**: Universal fork author, dynamic package inspection engine (WGT/IPK), custom repository release fetcher, and de-coupled sideloading architecture.
+- **[Krishnakant Gangurde](https://github.com/Krishnakant010)**: Universal fork author, dynamic package inspection engine (WGT/IPK), custom repository release fetcher, and de-coupled sideloading architecture.
