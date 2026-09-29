@@ -104,8 +104,7 @@ jobs:
       - name: Build Android Release APK
         run: |
           cd mobile/android
-          gradle wrapper --gradle-version 8.10.2
-          ./gradlew assembleRelease --no-daemon
+          gradle assembleRelease --no-daemon
 
       - name: Upload Android Artifacts
         uses: actions/upload-artifact@v4

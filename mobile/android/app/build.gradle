@@ -1,20 +1,10 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
-apply plugin: "com.facebook.react"
-
-react {
-    autolinkLibrariesWithApp()
-}
-
-def enableProguardInReleaseBuilds = false
-def jscFlavor = 'org.webkit:android-jsc:+'
 
 android {
-    ndkVersion rootProject.ext.ndkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    namespace "io.github.smarttvinstaller"
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "io.github.smarttvinstaller"
     defaultConfig {
         applicationId "io.github.smarttvinstaller"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -38,17 +28,14 @@ android {
         }
         release {
             signingConfig signingConfigs.debug
-            minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            minifyEnabled false
         }
     }
 }
 
 dependencies {
-    implementation("com.facebook.react:react-android")
-    if (hermesEnabled.toBoolean()) {
-        implementation("com.facebook.react:hermes-android")
-    } else {
-        implementation jscFlavor
-    }
+    implementation("com.facebook.react:react-android:0.76.5")
+    implementation("com.facebook.react:hermes-android:0.76.5")
+    implementation project(':react-native-tcp-socket')
+    implementation project(':react-native-fs')
 }
