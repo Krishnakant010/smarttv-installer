@@ -1,0 +1,23 @@
+<resources>
+    <color name="bg_dark">#0B0F19</color>
+    <color name="card_bg">#131B2A</color>
+    <color name="card_stroke">#1E293B</color>
+    <color name="card_stroke_active">#38BDF8</color>
+    <color name="input_bg">#0F1623</color>
+    <color name="terminal_bg">#070A11</color>
+    
+    <color name="primary">#38BDF8</color>
+    <color name="primary_dark">#0284C7</color>
+    <color name="accent_indigo">#818CF8</color>
+    
+    <color name="text_title">#F8FAFC</color>
+    <color name="text_body">#E2E8F0</color>
+    <color name="text_muted">#64748B</color>
+    <color name="text_hint">#475569</color>
+    
+    <color name="status_green">#10B981</color>
+    <color name="status_amber">#F59E0B</color>
+    <color name="status_red">#EF4444</color>
+    <color name="red_tint">#2C151B</color>
+    <color name="btn_dark">#1E293B</color>
+</resources>

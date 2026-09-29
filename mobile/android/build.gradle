@@ -21,27 +21,4 @@ allprojects {
         google()
         mavenCentral()
     }
-    configurations.all {
-        resolutionStrategy {
-            dependencySubstitution {
-                substitute module('com.facebook.react:react-native') using module('com.facebook.react:react-android:0.76.5')
-                substitute module('com.facebook.react:hermes-engine') using module('com.facebook.react:hermes-android:0.76.5')
-            }
-            force 'com.facebook.react:react-android:0.76.5'
-        }
-    }
-}
-
-subprojects {
-    afterEvaluate { project ->
-        if (project.hasProperty("android")) {
-            if (project.android.namespace == null) {
-                if (project.name == "react-native-fs") {
-                    project.android.namespace = "com.rnfs"
-                } else if (project.name == "react-native-tcp-socket") {
-                    project.android.namespace = "com.asterinet.react.tcpsocket"
-                }
-            }
-        }
-    }
 }

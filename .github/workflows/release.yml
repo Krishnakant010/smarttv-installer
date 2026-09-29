@@ -88,24 +88,10 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.10.2'
-
-      - name: Install Mobile Dependencies
-        run: cd mobile && npm install
-
-      - name: Bundle React Native JS
-        run: |
-          cd mobile
-          mkdir -p android/app/src/main/assets
-          npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/
 
       - name: Build Android Release APK
         run: |
