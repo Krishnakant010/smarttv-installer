@@ -72,7 +72,7 @@
       "artifactName": "SmartTV-Installer-${version}-Windows-Portable.${ext}"
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "artifactName": "SmartTV-Installer-${version}-Windows-Setup.${ext}"

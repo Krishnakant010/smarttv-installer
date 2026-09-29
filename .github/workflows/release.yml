@@ -88,12 +88,14 @@ jobs:
         with:
           name: linux-binaries
           path: release-assets
+          merge-multiple: true
 
       - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
           name: windows-binaries
           path: release-assets
+          merge-multiple: true
 
       - name: Determine Release Tag
         id: vars
@@ -109,7 +111,7 @@ jobs:
         with:
           tag_name: ${{ steps.vars.outputs.tag }}
           name: SmartTV Sideload Installer ${{ steps.vars.outputs.tag }}
-          files: release-assets/*
+          files: release-assets/**/*
           draft: false
           prerelease: false
           generate_release_notes: true
