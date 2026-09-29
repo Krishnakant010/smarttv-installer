@@ -75,9 +75,46 @@ jobs:
           path: dist/*.exe
           if-no-files-found: error
 
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Install Mobile Dependencies
+        run: cd mobile && npm install
+
+      - name: Build Android Release APK
+        run: |
+          cd mobile/android
+          gradle wrapper
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Upload Android Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-binaries
+          path: mobile/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
   publish-release:
     name: Publish GitHub Release
-    needs: [build-linux, build-windows]
+    needs: [build-linux, build-windows, build-android]
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -94,6 +131,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-binaries
+          path: release-assets
+          merge-multiple: true
+
+      - name: Download Android artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: android-binaries
           path: release-assets
           merge-multiple: true
 
