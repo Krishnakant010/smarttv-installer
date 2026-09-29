@@ -22,7 +22,13 @@ SmartTV Installer is built on the shoulders of giants. We express our deepest gr
 
 ---
 
-### 4. `iqui27` — [nuvio-native-legacy](https://github.com/iqui27/nuvio-native-legacy)
+### 4. webOSBrew Team — [webOS Homebrew Channel](https://github.com/webosbrew)
+* **Organization:** [webOSBrew](https://github.com/webosbrew)
+* **Contribution:** Pioneering open-source homebrew application ecosystem and package repository for LG webOS Smart TVs.
+
+---
+
+### 5. `iqui27` — [nuvio-native-legacy](https://github.com/iqui27/nuvio-native-legacy)
 * **Author:** [iqui27](https://github.com/iqui27)
 * **Contribution:** Development of the native C/SDL2/WASM legacy TV application which highlighted the need for a truly generic, package-agnostic TV sideloading utility for the community.
 

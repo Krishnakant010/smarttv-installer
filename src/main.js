@@ -283,7 +283,7 @@ async function fetchJson(url) {
   const response = await fetch(url, {
     headers: {
       "Accept": "application/vnd.github+json",
-      "User-Agent": "Nuvio-TV-Installer"
+      "User-Agent": "SmartTV-Installer/1.0.0"
     }
   });
 
@@ -297,7 +297,7 @@ async function fetchJson(url) {
 async function downloadFile(event, url, targetPath) {
   emit(event, { type: "info", text: `Download ${url}` });
   const response = await fetch(url, {
-    headers: { "User-Agent": "Nuvio-TV-Installer" }
+    headers: { "User-Agent": "SmartTV-Installer/1.0.0" }
   });
 
   if (!response.ok) {
@@ -336,7 +336,8 @@ async function getRecentReleases(platform, repoOverride = "", limit = 5) {
     throw new Error(`Unsupported platform: ${platform}`);
   }
 
-  const repo = (repoOverride && String(repoOverride).trim()) || config.defaultGithubRepo || "iqui27/nuvio-native-legacy";
+  const defaultRepo = releasePlatform === "webos" ? "webosbrew/webos-homebrew-channel" : "reisxd/TizenBrew";
+  const repo = (repoOverride && String(repoOverride).trim()) || config.defaultGithubRepo || defaultRepo;
   const releases = await fetchJson(`https://api.github.com/repos/${repo}/releases?per_page=20`);
   return releases
     .filter((release) => !release.draft && releaseAssetForPlatform(release, releasePlatform))
@@ -356,7 +357,8 @@ async function resolveReleaseAsset(event, platform, releaseId, repoOverride = ""
     throw new Error("Invalid GitHub release selection.");
   }
 
-  const repo = (repoOverride && String(repoOverride).trim()) || config.defaultGithubRepo || "iqui27/nuvio-native-legacy";
+  const defaultRepo = platform === "webos" ? "webosbrew/webos-homebrew-channel" : "reisxd/TizenBrew";
+  const repo = (repoOverride && String(repoOverride).trim()) || config.defaultGithubRepo || defaultRepo;
   const releaseUrl = normalizedReleaseId
     ? `https://api.github.com/repos/${repo}/releases/${normalizedReleaseId}`
     : `https://api.github.com/repos/${repo}/releases/latest`;
@@ -1097,7 +1099,7 @@ function samsungPlatformIncompatibilityError(requiredVersion = "", actualVersion
     : "This package requires a newer Samsung Tizen version. ";
   const detected = actualVersion ? ` The TV reported Tizen ${actualVersion}.` : "";
   const error = new Error(
-    "This Samsung TV is not compatible with this Nuvio package. " +
+    "This Samsung TV is not compatible with this package. " +
     requirement +
     `The standalone WGT was not installed.${detected}`
   );
@@ -1295,7 +1297,7 @@ function samsungAccessInfoHtml(status = "waiting") {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nuvio Samsung Login</title>
+  <title>Samsung Account Login</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
@@ -1318,10 +1320,10 @@ function samsungAccessInfoHtml(status = "waiting") {
 </head>
 <body>
   <main>
-    <div class="brand"><span class="mark"></span>Nuvio Installer</div>
+    <div class="brand"><span class="mark"></span>SmartTV Installer</div>
     <div class="status"><span class="pulse"></span>${isDone ? "Authorized" : "Waiting for Samsung"}</div>
     <h1>${isDone ? "Samsung authorization complete" : "Samsung authorization in progress"}</h1>
-    <p>${isDone ? "You can close this window and return to the Nuvio installer. The process will continue automatically." : "Complete the Samsung login in the opened window. The Nuvio installer will receive authorization automatically."}</p>
+    <p>${isDone ? "You can close this window and return to SmartTV Installer. The process will continue automatically." : "Complete the Samsung login in the opened window. The SmartTV installer will receive authorization automatically."}</p>
     <div class="rail"></div>
     <div class="hint">${isDone ? "Certificate generation is continuing in the desktop app." : "Keep this page open until authorization finishes."}</div>
   </main>
@@ -1464,7 +1466,7 @@ async function createSamsungCertificateForTarget(event, transport, knownDuid = "
   }
   const password = crypto.randomBytes(18).toString("base64url");
   const authorInfo = {
-    name: "Nuvio",
+    name: "SmartTV",
     email: accessInfo.inputEmailID || accessInfo.email || userId,
     password,
     privilegeLevel: "Partner"
@@ -2051,7 +2053,7 @@ async function signTizenPackageWithStudioProfile(event, packagePath, profileName
 
   emit(event, { type: "info", text: `Signing WGT with Tizen Studio security profile "${profileName}".` });
   const parsed = path.parse(packagePath);
-  const workRoot = path.join(app.getPath("temp"), `nuvio-tizen-sign-${Date.now()}`);
+  const workRoot = path.join(app.getPath("temp"), `smarttv-tizen-sign-${Date.now()}`);
   const unpackDir = path.join(workRoot, "package");
   const outputDir = path.join(workRoot, "out");
   await fsp.mkdir(unpackDir, { recursive: true });
@@ -2201,7 +2203,7 @@ async function uninstallSamsungApp(event, transport, identifiers) {
   );
 
   if (transport.type === "adb") {
-    throw new Error("Samsung direct uninstall is not reliable on this TV. Install Tizen Studio/sdb for one-click uninstall, or remove Nuvio from the TV apps menu.");
+    throw new Error("Samsung direct uninstall is not reliable on this TV. Install Tizen Studio/sdb for one-click uninstall, or remove the application from the TV apps menu.");
   }
 
   let lastError = null;
@@ -2463,7 +2465,7 @@ ipcMain.handle("installer:getPresets", async () => {
 });
 
 ipcMain.handle("installer:getConfig", async () => ({
-  repo: config.defaultGithubRepo || "iqui27/nuvio-native-legacy",
+  repo: config.defaultGithubRepo || "",
   presets: config.communityPresets || [],
   webosAppId: config.webos?.appId,
   tizenAppId: config.tizen?.appId,

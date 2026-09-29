@@ -73,7 +73,7 @@ let lgDevices = [];
 let releaseRequestId = 0;
 let lgDeviceDeleteInProgress = false;
 let communityPresets = [];
-let activeRepo = "iqui27/nuvio-native-legacy";
+let activeRepo = "";
 
 // --- Credits Modal Handlers ---
 btnOpenCredits?.addEventListener('click', () => {
@@ -96,26 +96,44 @@ async function loadInstallerData() {
   if (config?.repo) {
     activeRepo = config.repo;
   }
-  populatePresets();
+  populatePresets(state.os);
   await refreshLgDevices();
   setupInstallerUI();
 }
 
-function populatePresets() {
+function populatePresets(targetOs = state.os) {
   if (!presetSelect) return;
   presetSelect.innerHTML = '';
-  communityPresets.forEach((preset) => {
+
+  const filteredPresets = communityPresets.filter((preset) => {
+    if (!targetOs || targetOs === 'multi') return true;
+    if (preset.platform === 'both') return true;
+    return preset.platform === targetOs;
+  });
+
+  filteredPresets.forEach((preset) => {
     const opt = document.createElement('option');
     opt.value = preset.repo;
-    opt.textContent = `${preset.name} (${preset.platform === 'both' ? 'Samsung & LG' : preset.platform.toUpperCase()})`;
+    const platformLabel = preset.platform === 'both' ? 'Samsung & LG' : preset.platform.toUpperCase();
+    opt.textContent = `${preset.name} (${platformLabel})`;
     presetSelect.appendChild(opt);
   });
+
   const customOpt = document.createElement('option');
   customOpt.value = 'custom';
   customOpt.textContent = 'Custom GitHub Repository...';
   presetSelect.appendChild(customOpt);
 
-  presetSelect.value = activeRepo;
+  const matched = filteredPresets.some((p) => p.repo === activeRepo);
+  if (matched) {
+    presetSelect.value = activeRepo;
+  } else if (filteredPresets.length > 0) {
+    activeRepo = filteredPresets[0].repo;
+    presetSelect.value = activeRepo;
+  } else {
+    presetSelect.value = 'custom';
+    customRepoRow.classList.remove('hidden');
+  }
 }
 
 presetSelect?.addEventListener('change', () => {
@@ -132,7 +150,7 @@ presetSelect?.addEventListener('change', () => {
 btnFetchRepo?.addEventListener('click', () => {
   const customVal = customRepoInput.value.trim();
   if (!customVal || !customVal.includes('/')) {
-    appendLog('Please enter a valid GitHub repository in the format owner/repo (e.g. iqui27/nuvio-native-legacy).', 'error');
+    appendLog('Please enter a valid GitHub repository in the format owner/repo (e.g. webosbrew/webos-homebrew-channel or reisxd/TizenBrew).', 'error');
     return;
   }
   activeRepo = customVal;
@@ -268,6 +286,7 @@ osCards.forEach((card) => {
 btnMultiOs?.addEventListener('click', () => {
   state.os = 'multi';
   state.mode = 'custom';
+  populatePresets(state.os);
   setupInstallerUI();
   setView('installer');
 });
@@ -276,6 +295,7 @@ btnMultiOs?.addEventListener('click', () => {
 modeCards.forEach((card) => {
   card.addEventListener('click', () => {
     state.mode = card.dataset.mode;
+    populatePresets(state.os);
     setupInstallerUI();
     setView('installer');
     if (state.mode === 'simple') {
@@ -295,7 +315,7 @@ function setupInstallerUI() {
     instTitle.innerText = "Universal Sideload";
     instBadge.innerText = "MULTI-OS";
   } else {
-    instTitle.innerText = isSamsung ? "Samsung Tizen" : "LG WebOS";
+    instTitle.innerText = isSamsung ? "Samsung Tizen" : "LG webOS";
     instBadge.innerText = isSimple ? "GITHUB" : "LOCAL";
   }
   
@@ -318,7 +338,7 @@ function setupInstallerUI() {
       osNoticeText.innerHTML = `<strong>Note:</strong> ${samsungDevModeNote} ${renderCertificateResetButton()}`;
     }
   } else {
-    osNoticeText.innerHTML = "<strong>Note:</strong> For LG webOS, ensure the Developer Mode app is installed from the LG Content Store and Developer Mode is switched ON.";
+    osNoticeText.innerHTML = "<strong>Note:</strong> For LG webOS, ensure the <em>Developer Mode</em> app is installed from the LG Content Store and Developer Mode is switched ON. Enter your TV IP address and Dev Mode Passphrase to pair automatically.";
   }
 
   // Fields

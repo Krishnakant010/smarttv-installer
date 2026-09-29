@@ -36,13 +36,13 @@ function preferEcdhKex(algorithms) {
 }
 
 function patchSsh2(ssh2) {
-  if (!ssh2 || !ssh2.Client || ssh2.Client.__nuvioWebosCompatPatched) {
+  if (!ssh2 || !ssh2.Client || ssh2.Client.__smarttvWebosCompatPatched) {
     return ssh2;
   }
 
   const OriginalClient = ssh2.Client;
 
-  class NuvioWebosCompatClient extends OriginalClient {
+  class SmartTvWebosCompatClient extends OriginalClient {
     connect(config) {
       if (config && config.algorithms) {
         config = {
@@ -55,8 +55,8 @@ function patchSsh2(ssh2) {
     }
   }
 
-  NuvioWebosCompatClient.__nuvioWebosCompatPatched = true;
-  ssh2.Client = NuvioWebosCompatClient;
+  SmartTvWebosCompatClient.__smarttvWebosCompatPatched = true;
+  ssh2.Client = SmartTvWebosCompatClient;
   return ssh2;
 }
 

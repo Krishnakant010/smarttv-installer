@@ -1,5 +1,5 @@
 {
-  "defaultGithubRepo": "iqui27/nuvio-native-legacy",
+  "defaultGithubRepo": "webosbrew/webos-homebrew-channel",
   "webos": {
     "assetPattern": "\\.ipk$"
   },
@@ -8,8 +8,38 @@
   },
   "communityPresets": [
     {
+      "name": "webOS Homebrew Channel",
+      "repo": "webosbrew/webos-homebrew-channel",
+      "platform": "lg",
+      "description": "Homebrew application manager and package repository for LG webOS TVs"
+    },
+    {
+      "name": "YouTube for webOS",
+      "repo": "webosbrew/youtube-webos",
+      "platform": "lg",
+      "description": "YouTube client with AdBlock and SponsorBlock for LG webOS"
+    },
+    {
+      "name": "TizenBrew",
+      "repo": "reisxd/TizenBrew",
+      "platform": "tizen",
+      "description": "Homebrew platform and package manager for Samsung Smart TVs"
+    },
+    {
+      "name": "Moonlight TV",
+      "repo": "mariotaku/moonlight-tv",
+      "platform": "both",
+      "description": "High-performance Game Streaming client for LG webOS & Samsung Tizen"
+    },
+    {
+      "name": "NuvioX (Watch Party & 4K Edition)",
+      "repo": "Krishnakant010/nuvio-watchparty",
+      "platform": "tizen",
+      "description": "NuvioX with Two-Way Watch Party Sync, 4K UHD Mode & Samsung TV Optimizations"
+    },
+    {
       "name": "Nuvio Native Legacy",
-      "repo": "iqui27/nuvio-native-legacy",
+      "repo": "Krishnakant010/nuvio-native-legacy",
       "platform": "both",
       "description": "High performance native C/SDL2/WASM client for LG webOS & Samsung Tizen"
     },
@@ -18,12 +48,6 @@
       "repo": "NuvioMedia/NuvioTVSmart",
       "platform": "both",
       "description": "Official web-based Nuvio TV client"
-    },
-    {
-      "name": "TizenBrew",
-      "repo": "reisxd/TizenBrew",
-      "platform": "tizen",
-      "description": "Homebrew platform for Samsung Smart TVs"
     }
   ]
 }

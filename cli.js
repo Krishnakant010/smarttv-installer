@@ -33,7 +33,8 @@ const adbCommands = AdbPacket.commands;
 const CERT_DIR = path.join(os.homedir(), ".smarttv-samsung-certificates");
 const LEGACY_CERT_DIR = path.join(os.homedir(), ".nuvio-samsung-certificates");
 const CACHE_DIR = path.join(os.homedir(), ".smarttv-cache");
-const DEFAULT_REPO = "iqui27/nuvio-native-legacy";
+const DEFAULT_SAMSUNG_REPO = "reisxd/TizenBrew";
+const DEFAULT_LG_REPO = "webosbrew/webos-homebrew-channel";
 
 // Terminal colors
 const colors = {
@@ -62,7 +63,7 @@ function parseArgs() {
     ip: "",
     file: "",
     platform: "", // "samsung" | "lg"
-    repo: DEFAULT_REPO,
+    repo: "",
     tag: "",
     port: 26101,
     passphrase: ""
@@ -72,7 +73,7 @@ function parseArgs() {
     const arg = args[i];
     if (arg === "--ip" || arg === "-i") {
       options.ip = args[++i];
-    } else if (arg === "--file" || arg === "-f" || arg === "--wgt" || arg === "-w") {
+    } else if (arg === "--file" || arg === "-f" || arg === "--wgt" || arg === "-w" || arg === "--ipk") {
       options.file = args[++i];
     } else if (arg === "--platform" || arg === "--os") {
       options.platform = (args[++i] || "").toLowerCase();
@@ -106,29 +107,39 @@ ${colors.bright}Usage:${colors.reset}
 
 ${colors.bright}Options:${colors.reset}
   --ip, -i <ip>          TV IP address (Required)
+  --platform, --os <os>  Target OS: 'samsung' or 'lg' (Auto-detected from file or repo)
   --file, -f <path>      Local .wgt or .ipk package file path (Optional)
-  --repo, -r <repo>      GitHub repository owner/repo (Default: ${DEFAULT_REPO})
+  --repo, -r <repo>      GitHub repository owner/repo (Default: ${DEFAULT_LG_REPO} for LG, ${DEFAULT_SAMSUNG_REPO} for Samsung)
   --tag, -t <tag>        GitHub release tag to fetch (Default: latest)
-  --platform <os>        Target OS: 'samsung' or 'lg' (Auto-detected from file)
-  --passphrase <pass>    Developer Mode passphrase (LG webOS first connection)
-  --port, -p <port>      Developer Mode port for Samsung (Default: 26101)
+  --passphrase <pass>    Developer Mode passphrase (LG webOS pairing)
+  --port, -p <port>      Developer Mode port for Samsung Tizen (Default: 26101)
   --help, -h             Show this help message
 
 ${colors.bright}Examples:${colors.reset}
-  node cli.js --ip 192.168.1.50
+  # LG webOS - Install Homebrew Channel preset:
+  node cli.js --ip 192.168.1.60 --platform lg --passphrase mypass
+
+  # LG webOS - Sideload local .ipk file:
+  node cli.js --ip 192.168.1.60 --file ./app.ipk --passphrase mypass
+
+  # Samsung Tizen - Install TizenBrew preset:
+  node cli.js --ip 192.168.1.50 --platform samsung
+
+  # Samsung Tizen - Sideload local .wgt file:
   node cli.js --ip 192.168.1.50 --file ./myapp.wgt
-  node cli.js --ip 192.168.1.60 --file ./myapp.ipk
-  node cli.js --ip 192.168.1.50 --repo reisxd/TizenBrew --tag latest
+
+  # Custom GitHub repository release sideload:
+  node cli.js --ip 192.168.1.60 --platform lg --repo mariotaku/moonlight-tv --tag latest
 
 ${colors.bright}Prerequisites:${colors.reset}
-  Samsung Tizen:
-    1. Open TV Apps screen, press 1 2 3 4 5 on remote.
-    2. Turn Developer Mode ON, set Host PC IP to this computer.
-    3. Restart TV (hold remote power button until logo appears).
-
   LG webOS:
-    1. Install "Developer Mode" from LG Content Store on TV.
-    2. Turn Dev Mode ON, note Passphrase and IP.
+    1. Install "Developer Mode" from the LG Content Store on your TV.
+    2. Turn Dev Mode Status ON, and note the displayed Passphrase and IP.
+
+  Samsung Tizen:
+    1. Open TV Apps panel, press 1 2 3 4 5 on the remote.
+    2. Turn Developer Mode ON, set Host PC IP to this computer's IP.
+    3. Restart TV (hold remote power button until Samsung logo appears).
 `);
 }
 
@@ -529,6 +540,29 @@ async function resignWgt(inputWgtPath, certConfig) {
   return outputPath;
 }
 
+function resolveAresBin(name) {
+  const isWin = process.platform === "win32";
+  const candidates = [
+    path.join(__dirname, "node_modules", ".bin", `${name}${isWin ? ".cmd" : ""}`),
+    path.join(__dirname, "node_modules", "@webos-tools", "cli", "bin", `${name}.js`)
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return name;
+}
+
+function runCommand(command, args = []) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, { stdio: "inherit" });
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`Command ${path.basename(command)} exited with code ${code}`));
+    });
+  });
+}
+
 // --- Main CLI Flow ---
 async function main() {
   const options = parseArgs();
@@ -544,12 +578,26 @@ async function main() {
     }
   }
 
+  // Detect or prompt for platform
+  if (options.file) {
+    const ext = path.extname(options.file).toLowerCase();
+    if (ext === ".ipk") options.platform = "lg";
+    else if (ext === ".wgt" || ext === ".tpk") options.platform = "samsung";
+  }
+  if (!options.platform) {
+    const answer = await prompt("Select target TV OS [1: LG webOS, 2: Samsung Tizen] (Default: 1): ");
+    options.platform = (answer.trim() === "2" || answer.toLowerCase().includes("samsung") || answer.toLowerCase().includes("tizen"))
+      ? "samsung"
+      : "lg";
+  }
+
   // 1. Resolve package file
   let packagePath = options.file;
   if (!packagePath) {
-    // If platform is not specified, default to Samsung
-    const targetPlatform = options.platform || "samsung";
-    packagePath = await resolveGitHubRelease(options.repo, options.tag, targetPlatform);
+    if (!options.repo) {
+      options.repo = options.platform === "lg" ? DEFAULT_LG_REPO : DEFAULT_SAMSUNG_REPO;
+    }
+    packagePath = await resolveGitHubRelease(options.repo, options.tag, options.platform);
   } else {
     if (!fs.existsSync(packagePath)) {
       throw new Error(`Package file not found: ${packagePath}`);
@@ -563,17 +611,42 @@ async function main() {
 
   if (meta.platform === "lg" || options.platform === "lg" || packagePath.endsWith(".ipk")) {
     // LG webOS flow
-    info(`Installing on LG webOS TV (${options.ip})...`);
-    const aresBin = path.join(__dirname, "node_modules", ".bin", process.platform === "win32" ? "ares-install.cmd" : "ares-install");
-    if (!fs.existsSync(aresBin)) {
-      throw new Error("ares-install from @webos-tools/cli is not installed. Run 'npm install'.");
+    const deviceName = `smarttv-lg-${options.ip.replace(/[^a-z0-9]+/gi, "-")}`;
+    const aresInstallBin = resolveAresBin("ares-install");
+    const aresSetupBin = resolveAresBin("ares-setup-device");
+    const aresNovacomBin = resolveAresBin("ares-novacom");
+
+    if (options.passphrase) {
+      info(`Configuring LG webOS TV device profile "${deviceName}" at ${options.ip}...`);
+      try {
+        await runCommand(aresSetupBin, ["--remove", deviceName]).catch(() => {});
+        await runCommand(aresSetupBin, [
+          "--add", deviceName,
+          "--info", "username=prisoner",
+          "--info", `host=${options.ip}`,
+          "--info", "port=9922",
+          "--info", "default=true"
+        ]);
+        info("Retrieving SSH authentication key from LG TV...");
+        await runCommand(aresNovacomBin, ["--device", deviceName, "--getkey", "--passphrase", options.passphrase]);
+        success("LG webOS TV paired successfully.");
+      } catch (e) {
+        warn(`Setup warning: ${e.message}`);
+      }
     }
-    const ares = spawn(aresBin, ["--device", options.ip, packagePath], { stdio: "inherit" });
-    ares.on("close", (code) => {
-      if (code === 0) success("\n🎉 Application installed successfully on LG webOS TV!");
-      else error(`\nInstallation failed with code ${code}`);
-      process.exit(code);
-    });
+
+    info(`Installing ${meta.appName} on LG webOS TV...`);
+    const targetDevice = options.passphrase ? deviceName : options.ip;
+    try {
+      await runCommand(aresInstallBin, ["--device", targetDevice, packagePath]);
+      success("\n🎉 Application installed successfully on LG webOS TV!");
+    } catch (e) {
+      error(`\nInstallation failed: ${e.message}`);
+      if (!options.passphrase) {
+        info("Hint: If this is the first time connecting to this LG TV, provide --passphrase <key> to authenticate.");
+      }
+      process.exit(1);
+    }
     return;
   }
 

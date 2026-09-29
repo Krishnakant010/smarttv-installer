@@ -2,7 +2,10 @@
   "name": "smarttv-installer",
   "version": "1.0.0",
   "description": "Universal desktop & CLI sideload installer for Samsung Tizen and LG webOS Smart TVs.",
-  "author": "Krishnakant Gangurde",
+  "author": {
+    "name": "Krishnakant Gangurde",
+    "email": "krishnakantgangurde@users.noreply.github.com"
+  },
   "license": "GPL-3.0-only",
   "main": "src/main.js",
   "bin": {
@@ -15,7 +18,9 @@
     "dist": "electron-builder",
     "dist:win": "electron-builder --win --publish never",
     "dist:mac": "electron-builder --mac --publish never",
-    "dist:linux": "electron-builder --linux --publish never"
+    "dist:linux": "electron-builder --linux AppImage --publish never",
+    "dist:linux:deb": "electron-builder --linux deb --publish never",
+    "dist:linux:all": "electron-builder --linux AppImage deb --publish never"
   },
   "dependencies": {
     "@webos-tools/cli": "^3.2.4",
@@ -54,11 +59,23 @@
           "arch": [
             "x64"
           ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
     "portable": {
-      "artifactName": "SmartTV-Installer-${version}-Windows.${ext}"
+      "artifactName": "SmartTV-Installer-${version}-Windows-Portable.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "SmartTV-Installer-${version}-Windows-Setup.${ext}"
     },
     "mac": {
       "icon": "icon.icns",
@@ -71,9 +88,16 @@
     "linux": {
       "icon": "icon.png",
       "category": "Utility",
+      "maintainer": "Krishnakant Gangurde <krishnakantgangurde@users.noreply.github.com>",
       "target": [
         {
           "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
           "arch": [
             "x64"
           ]
@@ -81,6 +105,9 @@
       ]
     },
     "appImage": {
+      "artifactName": "SmartTV-Installer-${version}-Linux.${ext}"
+    },
+    "deb": {
       "artifactName": "SmartTV-Installer-${version}-Linux.${ext}"
     }
   }

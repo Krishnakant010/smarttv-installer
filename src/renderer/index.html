@@ -66,13 +66,13 @@
         <div class="select-card" data-mode="simple">
           <div class="card-badge">PRESETS & GITHUB</div>
           <h3>GitHub Releases</h3>
-          <p>Download and install directly from community presets (Nuvio Native, TizenBrew, etc.) or any GitHub repository.</p>
+          <p>Download and install directly from community presets (Homebrew Channel, TizenBrew, Moonlight, etc.) or any custom GitHub repository.</p>
         </div>
         
         <div class="select-card" data-mode="custom">
           <div class="card-badge advanced">LOCAL SIDELOAD</div>
           <h3>Local Package File</h3>
-          <p>Drag & drop or browse your own .wgt or .ipk package. Supports automated Samsung OAuth certificate generation.</p>
+          <p>Drag & drop or browse your own .wgt or .ipk package. Supports automated Samsung OAuth certificate generation and LG webOS developer mode pairing.</p>
         </div>
       </div>
     </div>
@@ -84,7 +84,7 @@
         <div class="glass-panel installer-sidebar">
           <div class="installer-header">
             <div>
-              <h2 id="inst-title">Samsung Tizen</h2>
+              <h2 id="inst-title">Smart TV</h2>
               <p class="subtitle" id="inst-subtitle" style="text-align:left; margin-bottom: 0; font-size: 15px;">GitHub Mode</p>
             </div>
             <span class="badge-pill" id="inst-badge">GITHUB</span>
@@ -100,17 +100,15 @@
             <div class="form-group hidden" id="release-fields">
               <label for="presetSelect">Application Preset</label>
               <select id="presetSelect">
-                <!-- Dynamically loaded from installer.config.json -->
-                <option value="iqui27/nuvio-native-legacy">Nuvio Native Legacy (C / WASM)</option>
-                <option value="NuvioMedia/NuvioTVSmart">Nuvio TV Smart (Web)</option>
-                <option value="reisxd/TizenBrew">TizenBrew (Homebrew Platform)</option>
+                <!-- Dynamically loaded from installer.config.json based on selected OS -->
+                <option value="">Select a community preset...</option>
                 <option value="custom">Custom GitHub Repository...</option>
               </select>
 
               <div class="form-group hidden" id="custom-repo-row" style="margin-top: 10px;">
                 <label for="customRepoInput">GitHub Repository (owner/repo)</label>
                 <div class="file-selector">
-                  <input type="text" id="customRepoInput" placeholder="e.g. owner/project" autocomplete="off" />
+                  <input type="text" id="customRepoInput" placeholder="e.g. webosbrew/webos-homebrew-channel" autocomplete="off" />
                   <button type="button" id="btn-fetch-repo">Fetch</button>
                 </div>
               </div>
@@ -270,6 +268,7 @@
             <li><strong>NuvioMedia</strong> (<a href="https://github.com/NuvioMedia/NuvioTVSmart-Installer" target="_blank">NuvioTVSmart-Installer</a>): Original upstream installer application architecture, LG device management, and Samsung certificate persistence.</li>
             <li><strong>Reis Can (reisxd)</strong> (<a href="https://github.com/reisxd/tizen.js" target="_blank">tizen.js</a>, <a href="https://github.com/reisxd/TizenBrew" target="_blank">TizenBrew</a>): Pure Node.js Samsung Developer OAuth certificate generation and ADB sync sideload transport.</li>
             <li><strong>LG webOS OSE Team</strong> (<code>@webos-tools/cli</code>): Official webOS development and packaging CLI tools.</li>
+            <li><strong>webOSBrew Team</strong> (<a href="https://github.com/webosbrew" target="_blank">webOS Homebrew Channel</a>): Open-source homebrew ecosystem and package repository for LG webOS.</li>
             <li><strong>iqui27</strong> (<a href="https://github.com/iqui27/nuvio-native-legacy" target="_blank">nuvio-native-legacy</a>): High-performance native C / SDL2 / WASM TV client.</li>
             <li><strong>Krishnakant Gangurde</strong>: Generic fork, universal package inspection (WGT/IPK), custom repository release fetcher, and de-coupled sideloading engine.</li>
           </ul>
