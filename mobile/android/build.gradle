@@ -21,6 +21,15 @@ allprojects {
         google()
         mavenCentral()
     }
+    configurations.all {
+        resolutionStrategy {
+            dependencySubstitution {
+                substitute module('com.facebook.react:react-native') using module('com.facebook.react:react-android:0.76.5')
+                substitute module('com.facebook.react:hermes-engine') using module('com.facebook.react:hermes-android:0.76.5')
+            }
+            force 'com.facebook.react:react-android:0.76.5'
+        }
+    }
 }
 
 subprojects {

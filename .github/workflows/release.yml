@@ -101,16 +101,27 @@ jobs:
       - name: Install Mobile Dependencies
         run: cd mobile && npm install
 
+      - name: Bundle React Native JS
+        run: |
+          cd mobile
+          mkdir -p android/app/src/main/assets
+          npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/
+
       - name: Build Android Release APK
         run: |
           cd mobile/android
           gradle assembleRelease --no-daemon
 
+      - name: Prepare APK For Release
+        run: |
+          mkdir -p mobile/dist
+          cp mobile/android/app/build/outputs/apk/release/*.apk mobile/dist/SmartTV-Installer.apk
+
       - name: Upload Android Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: android-binaries
-          path: mobile/android/app/build/outputs/apk/release/*.apk
+          path: mobile/dist/SmartTV-Installer.apk
           if-no-files-found: error
 
   publish-release:

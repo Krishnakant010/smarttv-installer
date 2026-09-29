@@ -8,3 +8,8 @@ dist/
 .smarttv-samsung-certificates/
 .nuvio-cache/
 .nuvio-samsung-certificates/
+.gradle/
+build/
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/dist/
