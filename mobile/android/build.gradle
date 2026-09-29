@@ -22,3 +22,17 @@ allprojects {
         mavenCentral()
     }
 }
+
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty("android")) {
+            if (project.android.namespace == null) {
+                if (project.name == "react-native-fs") {
+                    project.android.namespace = "com.rnfs"
+                } else if (project.name == "react-native-tcp-socket") {
+                    project.android.namespace = "com.asterinet.react.tcpsocket"
+                }
+            }
+        }
+    }
+}
