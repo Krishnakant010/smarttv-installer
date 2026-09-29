@@ -34,6 +34,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.facebook.react:react-android:0.76.5")
     implementation("com.facebook.react:hermes-android:0.76.5")
     implementation project(':react-native-tcp-socket')
