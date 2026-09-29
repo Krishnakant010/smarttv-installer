@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="100" fill="#0B0F19"/>
+  <!-- Clean High-Precision 16:9 Screen Outline -->
+  <rect x="76" y="104" width="360" height="228" rx="20" fill="none" stroke="#38BDF8" stroke-width="16"/>
+  <!-- Minimalist Clean Legs -->
+  <line x1="136" y1="332" x2="116" y2="396" stroke="#38BDF8" stroke-width="16" stroke-linecap="round"/>
+  <line x1="376" y1="332" x2="396" y2="396" stroke="#38BDF8" stroke-width="16" stroke-linecap="round"/>
+  <!-- Double Inward Sideload Chevrons -->
+  <path d="M 200 172 L 256 222 L 312 172" fill="none" stroke="#38BDF8" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 200 236 L 256 286 L 312 236" fill="none" stroke="#F8FAFC" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

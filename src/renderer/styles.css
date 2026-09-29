@@ -635,6 +635,14 @@ input:checked + .toggle-slider:before {
   margin: 0 auto;
 }
 
+.brand-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: contain;
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.2);
+}
+
 .brand-title {
   font-size: 16px;
   font-weight: 600;
