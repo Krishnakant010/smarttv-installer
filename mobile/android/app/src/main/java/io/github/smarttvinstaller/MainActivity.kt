@@ -1,17 +1,24 @@
 package io.github.smarttvinstaller
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import android.widget.Button
 import android.widget.EditText
-import android.widget.ProgressBar
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.textfield.TextInputLayout
 import io.github.smarttvinstaller.models.Preset
 import io.github.smarttvinstaller.models.PresetCatalog
@@ -30,17 +37,26 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var togglePlatform: MaterialButtonToggleGroup
     private lateinit var layoutPassphrase: TextInputLayout
+    private lateinit var viewPassphraseSpacer: View
     private lateinit var etIpAddress: EditText
     private lateinit var etPort: EditText
     private lateinit var etPassphrase: EditText
+
     private lateinit var actvPresets: AutoCompleteTextView
+    private lateinit var layoutAppSummary: LinearLayout
+    private lateinit var tvAppDescription: TextView
+    private lateinit var tvAppIdBadge: TextView
+    private lateinit var layoutCustomFields: LinearLayout
     private lateinit var etCustomRepo: EditText
     private lateinit var etAppId: EditText
-    private lateinit var btnInstall: Button
-    private lateinit var btnLaunch: Button
-    private lateinit var btnUninstall: Button
-    private lateinit var btnClearLogs: TextView
-    private lateinit var progressBar: ProgressBar
+
+    private lateinit var btnInstall: MaterialButton
+    private lateinit var btnLaunch: MaterialButton
+    private lateinit var btnUninstall: MaterialButton
+    private lateinit var btnHelpGuide: ImageView
+    private lateinit var btnCopyLogs: ImageView
+    private lateinit var btnClearLogs: ImageView
+    private lateinit var progressBar: LinearProgressIndicator
     private lateinit var scrollLogs: ScrollView
     private lateinit var tvLogs: TextView
 
@@ -61,21 +77,32 @@ class MainActivity : AppCompatActivity() {
         btnInstall.setOnClickListener { handleInstall() }
         btnLaunch.setOnClickListener { handleLaunch() }
         btnUninstall.setOnClickListener { handleUninstall() }
+        btnHelpGuide.setOnClickListener { showConnectionGuide() }
+        btnCopyLogs.setOnClickListener { copyLogsToClipboard() }
         btnClearLogs.setOnClickListener { tvLogs.text = "" }
     }
 
     private fun initViews() {
         togglePlatform = findViewById(R.id.togglePlatform)
         layoutPassphrase = findViewById(R.id.layoutPassphrase)
+        viewPassphraseSpacer = findViewById(R.id.viewPassphraseSpacer)
         etIpAddress = findViewById(R.id.etIpAddress)
         etPort = findViewById(R.id.etPort)
         etPassphrase = findViewById(R.id.etPassphrase)
+
         actvPresets = findViewById(R.id.actvPresets)
+        layoutAppSummary = findViewById(R.id.layoutAppSummary)
+        tvAppDescription = findViewById(R.id.tvAppDescription)
+        tvAppIdBadge = findViewById(R.id.tvAppIdBadge)
+        layoutCustomFields = findViewById(R.id.layoutCustomFields)
         etCustomRepo = findViewById(R.id.etCustomRepo)
         etAppId = findViewById(R.id.etAppId)
+
         btnInstall = findViewById(R.id.btnInstall)
         btnLaunch = findViewById(R.id.btnLaunch)
         btnUninstall = findViewById(R.id.btnUninstall)
+        btnHelpGuide = findViewById(R.id.btnHelpGuide)
+        btnCopyLogs = findViewById(R.id.btnCopyLogs)
         btnClearLogs = findViewById(R.id.btnClearLogs)
         progressBar = findViewById(R.id.progressBar)
         scrollLogs = findViewById(R.id.scrollLogs)
@@ -95,9 +122,11 @@ class MainActivity : AppCompatActivity() {
         if (isTizen) {
             etPort.setText("26101")
             layoutPassphrase.visibility = View.GONE
+            viewPassphraseSpacer.visibility = View.GONE
         } else {
             etPort.setText("9922")
             layoutPassphrase.visibility = View.VISIBLE
+            viewPassphraseSpacer.visibility = View.VISIBLE
         }
 
         activePresets = PresetCatalog.presets.filter { it.isSamsung == isTizen }
@@ -109,17 +138,31 @@ class MainActivity : AppCompatActivity() {
         actvPresets.setAdapter(adapter)
 
         if (activePresets.isNotEmpty()) {
-            val initial = activePresets[0]
-            actvPresets.setText(initial.name, false)
-            etCustomRepo.setText(initial.repo)
-            etAppId.setText(if (initial.appId.isNotEmpty()) initial.appId else initial.pkgId)
+            applyPreset(activePresets[0])
         }
 
         actvPresets.setOnItemClickListener { _, _, position, _ ->
             val selected = activePresets[position]
-            etCustomRepo.setText(selected.repo)
-            etAppId.setText(if (selected.appId.isNotEmpty()) selected.appId else selected.pkgId)
+            applyPreset(selected)
         }
+    }
+
+    private fun applyPreset(preset: Preset) {
+        actvPresets.setText(preset.name, false)
+        etCustomRepo.setText(preset.repo)
+        val defaultId = if (preset.appId.isNotEmpty()) preset.appId else preset.pkgId
+        etAppId.setText(defaultId)
+
+        tvAppDescription.text = preset.description
+        if (defaultId.isNotEmpty()) {
+            tvAppIdBadge.visibility = View.VISIBLE
+            tvAppIdBadge.text = "ID: $defaultId"
+        } else {
+            tvAppIdBadge.visibility = View.GONE
+        }
+
+        val isCustom = preset.repo.isEmpty()
+        layoutCustomFields.visibility = if (isCustom) View.VISIBLE else View.GONE
     }
 
     private fun setBusy(busy: Boolean) {
@@ -150,12 +193,12 @@ class MainActivity : AppCompatActivity() {
         val isTizen = isTargetTizen()
 
         if (ip.isEmpty()) {
-            log("Error: Please enter TV IP address.")
+            log("Error: Please enter television IP address.")
             return
         }
         val port = portStr.toIntOrNull() ?: if (isTizen) 26101 else 9922
         if (repo.isEmpty()) {
-            log("Error: Please select a preset or specify a GitHub repo.")
+            log("Error: Please select a preset or specify a GitHub repository.")
             return
         }
 
@@ -163,7 +206,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val extension = if (isTizen) ".wgt" else ".ipk"
-                log("Resolving release asset for $repo ($extension)...")
+                log("Resolving latest release for $repo ($extension)...")
                 val (assetName, downloadUrl) = githubService.fetchLatestAsset(repo, extension)
                 log("Found asset: $assetName")
 
@@ -195,7 +238,7 @@ class MainActivity : AppCompatActivity() {
         val isTizen = isTargetTizen()
 
         if (ip.isEmpty()) {
-            log("Error: Please enter TV IP address.")
+            log("Error: Please enter television IP address.")
             return
         }
         if (appId.isEmpty()) {
@@ -230,7 +273,7 @@ class MainActivity : AppCompatActivity() {
         val isTizen = isTargetTizen()
 
         if (ip.isEmpty()) {
-            log("Error: Please enter TV IP address.")
+            log("Error: Please enter television IP address.")
             return
         }
         if (appId.isEmpty()) {
@@ -255,5 +298,30 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun copyLogsToClipboard() {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("Activity Log", tvLogs.text)
+        clipboard.setPrimaryClip(clip)
+        Toast.makeText(this, "Logs copied to clipboard", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showConnectionGuide() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("SmartTV Connection Guide")
+            .setMessage(
+                "LG webOS Setup:\n" +
+                "1. Install 'Developer Mode' from the LG Content Store.\n" +
+                "2. Launch the app, turn Dev Mode ON, and note the Passphrase.\n" +
+                "3. Ensure Key Server is ON. Connect via Port 9922.\n\n" +
+                "Samsung Tizen Setup:\n" +
+                "1. Open Smart Hub > Apps.\n" +
+                "2. On remote, press: 1, 2, 3, 4, 5.\n" +
+                "3. Toggle Developer Mode ON, enter your Phone/Host IP, and restart TV.\n" +
+                "4. Connect via Port 26101."
+            )
+            .setPositiveButton("Got It", null)
+            .show()
     }
 }
