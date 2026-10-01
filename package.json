@@ -1,6 +1,6 @@
 {
   "name": "smarttv-installer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Universal desktop & CLI sideload installer for Samsung Tizen and LG webOS Smart TVs.",
   "author": {
     "name": "Krishnakant Gangurde",
